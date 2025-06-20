@@ -5,7 +5,7 @@ from openai import OpenAI
 st.title("💬 Career Mate")
 st.write(
     "CareerMate는 OpenAI의 GPT-4o 모델을 사용하여 사용자의 직업과 위치에 맞춘 뉴스, 트렌드, 
-    이벤트, 정보를 제공하는 맞춤형 챗봇입니다."
+     이벤트, 정보를 제공하는 맞춤형 챗봇입니다."
     "전문 분야에 대한 설명과 피드백까지 지원해 실질적인 커리어 성장을 돕습니다."
     "이 앱을 사용하려면 OpenAI API 키가 필요하며, [여기](https://platform.openai.com/account/api-keys)에서 발급받을 수 있습니다.. "
     "또한 [이 튜토리얼](https://docs.streamlit.io/develop/tutorials/llms/build-conversational-apps)을 따라 단계별로 이 앱을 만드는 방법을 배울 수 있습니다."
