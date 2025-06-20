@@ -2,7 +2,7 @@ import streamlit as st
 from openai import OpenAI
 
 # Show title and description.
-st.title("💬 Career Mate")
+st.title("💬Career Mate👩🏻‍💻")
 st.write(
     "CareerMate는 OpenAI의 GPT-4o 모델을 사용하여 사용자의 직업과 위치에 맞춘 뉴스, 트렌드, 
      이벤트, 정보를 제공하는 맞춤형 챗봇입니다."
