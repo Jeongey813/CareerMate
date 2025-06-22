@@ -1,23 +1,6 @@
 import streamlit as st
 import datetime
 
-"""
-CareerMate — Streamlit App
--------------------------
-이 앱은 사용자의 직업·관심사·위치 정보를 바탕으로 GPT‑4o‑mini 모델에 프롬프트를 전달하여
-맞춤형 뉴스·트렌드·이벤트 브리핑을 제공합니다.
-
-핵심 변경점
-~~~~~~~~~~~
-1. **OpenAI 파이썬 라이브러리 호환**: 1.x (`from openai import OpenAI`) 또는 0.x (`import openai`) 모두 지원.
-2. **`st.write_stream` 호환**: Streamlit ≥ 1.29 필요. 구버전에서는 fallback 함수 안내.
-3. **사용자 입력 검증** 및 에러 메시지 향상.
-4. **사이드바**에 브리핑 시간과 힌트 표시.
-"""
-
-# --------------------------------------------------
-# 라이브러리 호환 처리
-# --------------------------------------------------
 try:
     # OpenAI >= 1.0
     from openai import OpenAI  # type: ignore
