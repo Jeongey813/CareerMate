@@ -1,6 +1,9 @@
 import streamlit as st
 import datetime
 
+# --------------------------------------------------
+# 라이브러리 호환 처리
+# --------------------------------------------------
 try:
     # OpenAI >= 1.0
     from openai import OpenAI  # type: ignore
@@ -36,6 +39,7 @@ st.subheader("📝 기본 정보 입력")
 
 profession = st.text_input("직업 / 전문 분야", placeholder="예: 데이터 분석가, UX 디자이너 …")
 interests = st.text_input("흥미 있는 분야 (콤마로 구분)", placeholder="예: AI, 데이터 시각화, 스타트업 …")
+location = st.text_input("거주 지역 또는 관심 지역", placeholder="예: 서울, 베를린, 부산 …")
 briefing_time = st.time_input("매일 브리핑 받을 시간", value=datetime.time(9, 0))
 
 # --------------------------------------------------
@@ -67,7 +71,7 @@ if "messages" not in st.session_state:
 # --------------------------------------------------
 system_prompt = (
     f"You are CareerMate, a Korean AI career companion. "
-    f"The user is a '{profession}' interested in '{interests}'. "
+    f"The user is a '{profession}' located in '{location}' and interested in '{interests}'. "
     f"Focus on news, trends, and local events relevant to these topics. "
     f"When possible, keep responses concise, informative, and in Korean. "
     f"The user prefers a daily briefing at {briefing_time.strftime('%H:%M')} Asia/Seoul. "
@@ -115,8 +119,8 @@ def _parse_chunk(chunk):
 if prompt := st.chat_input("궁금한 점을 입력하세요 …"):
 
     # 필수 입력 검증
-    if not profession or not interests:
-        st.warning("👀 먼저 직업과 흥미 분야를 입력해 주세요!")
+    if not profession or not interests or not location:
+        st.warning("👀 먼저 직업, 흥미 분야, 지역 정보를 모두 입력해 주세요!")
         st.stop()
 
     # 세션 히스토리에 사용자 메시지 저장
