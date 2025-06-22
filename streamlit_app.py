@@ -9,8 +9,8 @@ CareerMate — Streamlit App
 
 핵심 변경점
 ~~~~~~~~~~~
-1. **OpenAI 파이썬 라이브러리 호환**: 1.x (`from openai import OpenAI`) 또는 0.x (`import openai`) 모두 지원.
-2. **`st.write_stream` 호환**: Streamlit ≥ 1.29 필요. 구버전에서는 fallback 함수 안내.
+1. **OpenAI 파이썬 라이브러리 호환**: 1.x (`from openai import OpenAI`) 또는 0.x (`import openai`) 모두 지원.
+2. **`st.write_stream` 호환**: Streamlit ≥ 1.29 필요. 구버전에서는 fallback 함수 안내.
 3. **사용자 입력 검증** 및 에러 메시지 향상.
 4. **사이드바**에 브리핑 시간과 힌트 표시.
 """
@@ -19,7 +19,7 @@ CareerMate — Streamlit App
 # 라이브러리 호환 처리
 # --------------------------------------------------
 try:
-    # OpenAI >= 1.0
+    # OpenAI >= 1.0
     from openai import OpenAI  # type: ignore
     _USE_V2 = True
 except ImportError:  # pragma: no cover
@@ -35,10 +35,13 @@ st.set_page_config(page_title="CareerMate", page_icon="👩🏻‍💻", layout=
 # 헤더
 # --------------------------------------------------
 st.title("👩🏻‍💻 CareerMate 💬")
-st.write(
-    "CareerMate는 GPT‑4o‑mini 모델을 활용해 사용자의 **직업**과 **위치**를 기반으로 "
-    "맞춤형 뉴스, 업계 트렌드, 지역 이벤트 정보를 제공하는 지능형 챗봇입니다.\n\n"
-    "💡 매일 아침 원하는 시간에 개인화된 브리핑을 받아보세요!"
+st.markdown(
+    """
+    CareerMate는 GPT‑4o‑mini 모델을 활용해 사용자의 **직업**과 **위치**를 기반으로  
+    맞춤형 뉴스, 업계 트렌드, 지역 이벤트 정보를 제공하는 지능형 챗봇입니다.  
+
+    💡 매일 아침 원하는 시간에 개인화된 브리핑을 받아보세요!
+    """
 )
 
 st.divider()
@@ -66,7 +69,7 @@ if not openai_api_key:
 # --------------------------------------------------
 if _USE_V2:
     client = OpenAI(api_key=openai_api_key)
-else:  # OpenAI 0.x
+else:  # OpenAI 0.x
     import openai as _openai  # noqa: N812
     _openai.api_key = openai_api_key
 
@@ -106,7 +109,7 @@ def _request_stream(payload):
             messages=payload,
             stream=True,
         )
-    # OpenAI 0.x
+    # OpenAI 0.x
     return _openai.ChatCompletion.create(
         model="gpt-4o-mini",
         messages=payload,
@@ -165,5 +168,5 @@ if prompt := st.chat_input("궁금한 점을 입력하세요 …"):
 with st.sidebar:
     st.success(
         f"⏰ 매일 **{briefing_time.strftime('%H:%M')}** 브리핑이 설정되어 있습니다.\n"
-        "서버 측 스케줄러(예: cron, APScheduler)와 이메일/슬랙 Webhook을 연동해 자동 전달 기능을 구현해 보세요!"
+        "서버 측 스케줄러(예: cron, APScheduler)와 이메일/슬랙 Webhook을 연동해 자동 전달 기능을 구현해 보세요!"
     )
