@@ -60,7 +60,7 @@ if not openai_api_key:
 # --------------------------------------------------
 if _USE_V2:
     client = OpenAI(api_key=openai_api_key)
-else:  # OpenAI 0.x
+else:
     import openai as _openai  # noqa: N812
     _openai.api_key = openai_api_key
 
@@ -77,8 +77,9 @@ if "briefing_generated" not in st.session_state:
 # --------------------------------------------------
 system_prompt_base = (
     f"You are CareerMate, a Korean AI career companion. "
-    f"Today's date is {TODAY.isoformat()}. Always provide the most recent information "
-    f"(preferably from the last 10 days prior to {TODAY.isoformat()}) when answering. "
+    f"Today's date is {TODAY.isoformat()}. Always provide the most recent information, "
+    f"preferably from the last 10 days or upcoming after {TODAY.isoformat()}. "
+    f"If the user asks for '이벤트' or '행사', only mention those that are scheduled for {TODAY.isoformat()} or later in '{{location}}'. "
     f"The user is a '{{profession}}' located in '{{location}}' and interested in '{{interests}}'. "
     f"Keep responses concise, informative, markdown-formatted, and in Korean."
 )
@@ -86,16 +87,14 @@ system_prompt_base = (
 # --------------------------------------------------
 # 자동 브리핑 생성 함수
 # --------------------------------------------------
-
 def generate_daily_briefing():
-    """GPT를 호출해 오늘자 맞춤 브리핑을 생성한다."""
     briefing_prompt = (
         f"Please provide a concise (max 10 bullet points) daily briefing for a '{profession}' "
         f"in '{location}', interested in '{interests}'. Include:\n"
         f"1. 3 key news headlines (since {TODAY - datetime.timedelta(days=10)}).\n"
         f"2. 2 emerging industry trends.\n"
-        f"3. 2 upcoming local events (with dates).\n"
-        f"All content must be up to date as of {TODAY}. Respond in Korean with markdown bullets."
+        f"3. 2 upcoming local events (on or after {TODAY.isoformat()}).\n"
+        f"All content must be accurate as of {TODAY}. Respond in Korean with markdown bullets."
     )
 
     payload = [
@@ -119,20 +118,17 @@ if all([profession, interests, location]) and not st.session_state.briefing_gene
     st.session_state.messages.append({"role": "assistant", "content": daily_brief})
     st.session_state.briefing_generated = True
 
-# 이미 생성된 브리핑 포함해 이전 메시지 렌더링
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
 # --------------------------------------------------
-# 헬퍼: OpenAI 스트림 요청
+# OpenAI 스트림 처리
 # --------------------------------------------------
-
 def _request_stream(payload):
     if _USE_V2:
         return client.chat.completions.create(model="gpt-4o-mini", messages=payload, stream=True)
     return _openai.ChatCompletion.create(model="gpt-4o-mini", messages=payload, stream=True)
-
 
 def _parse_chunk(chunk):
     delta = chunk.choices[0].delta
@@ -151,7 +147,6 @@ if prompt := st.chat_input("궁금한 점을 입력하세요 …"):
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # 사용자 프로필을 반영한 시스템 프롬프트
     system_prompt = system_prompt_base.format(
         profession=profession, location=location, interests=interests
     )
@@ -174,7 +169,7 @@ if prompt := st.chat_input("궁금한 점을 입력하세요 …"):
     st.session_state.messages.append({"role": "assistant", "content": assistant_reply})
 
 # --------------------------------------------------
-# 사이드바 — 브리핑 설정 안내
+# 사이드바 안내
 # --------------------------------------------------
 with st.sidebar:
     st.success(
