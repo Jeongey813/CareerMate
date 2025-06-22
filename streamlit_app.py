@@ -1,113 +1,169 @@
 import streamlit as st
-from openai import OpenAI
 import datetime
 
-# --------------------------------------------------
-# Page configuration
-# --------------------------------------------------
-st.set_page_config(page_title="CareerMate", page_icon="👩🏻‍💻")
+"""
+CareerMate — Streamlit App
+-------------------------
+이 앱은 사용자의 직업·관심사·위치 정보를 바탕으로 GPT‑4o‑mini 모델에 프롬프트를 전달하여
+맞춤형 뉴스·트렌드·이벤트 브리핑을 제공합니다.
+
+핵심 변경점
+~~~~~~~~~~~
+1. **OpenAI 파이썬 라이브러리 호환**: 1.x (`from openai import OpenAI`) 또는 0.x (`import openai`) 모두 지원.
+2. **`st.write_stream` 호환**: Streamlit ≥ 1.29 필요. 구버전에서는 fallback 함수 안내.
+3. **사용자 입력 검증** 및 에러 메시지 향상.
+4. **사이드바**에 브리핑 시간과 힌트 표시.
+"""
 
 # --------------------------------------------------
-# App header
+# 라이브러리 호환 처리
+# --------------------------------------------------
+try:
+    # OpenAI >= 1.0
+    from openai import OpenAI  # type: ignore
+    _USE_V2 = True
+except ImportError:  # pragma: no cover
+    import openai  # type: ignore
+    _USE_V2 = False
+
+# --------------------------------------------------
+# 스트림릿 페이지 설정
+# --------------------------------------------------
+st.set_page_config(page_title="CareerMate", page_icon="👩🏻‍💻", layout="centered")
+
+# --------------------------------------------------
+# 헤더
 # --------------------------------------------------
 st.title("👩🏻‍💻 CareerMate 💬")
 st.write(
-    "CareerMate는 OpenAI GPT‑4o 모델을 활용하여 사용자의 **직업**과 **위치**를 기반으로 "
-    "맞춤형 뉴스, 업계 트렌드, 지역 이벤트 정보를 제공하는 지능형 챗봇입니다. "
-    "매일 아침 개인화된 브리핑을 받아보며 커리어 성장에 실질적인 도움을 받아보세요.  \n\n"
-    "앱 사용 전 [OpenAI API 키](https://platform.openai.com/account/api-keys)가 필요합니다."
+    "CareerMate는 GPT‑4o‑mini 모델을 활용해 사용자의 **직업**과 **위치**를 기반으로 "
+    "맞춤형 뉴스, 업계 트렌드, 지역 이벤트 정보를 제공하는 지능형 챗봇입니다.\n\n"
+    "💡 매일 아침 원하는 시간에 개인화된 브리핑을 받아보세요!"
 )
 
 st.divider()
 
 # --------------------------------------------------
-# User profile inputs
+# 사용자 기본 정보 입력
 # --------------------------------------------------
 st.subheader("📝 기본 정보 입력")
 
-profession = st.text_input("직업 / 전문 분야 (예: 데이터 분석가, UX 디자이너 등)", key="profession")
-interests = st.text_input("흥미 있는 분야 (콤마로 구분, 예: AI, 데이터 시각화, 스타트업)", key="interests")
-briefing_time = st.time_input("매일 브리핑을 받을 시간", value=datetime.time(9, 0), key="briefing_time")
+profession = st.text_input("직업 / 전문 분야", placeholder="예: 데이터 분석가, UX 디자이너 …")
+interests = st.text_input("흥미 있는 분야 (콤마로 구분)", placeholder="예: AI, 데이터 시각화, 스타트업 …")
+briefing_time = st.time_input("매일 브리핑 받을 시간", value=datetime.time(9, 0))
 
 # --------------------------------------------------
-# OpenAI API key input
+# OpenAI API 키 입력
 # --------------------------------------------------
 openai_api_key = st.text_input("🔑 OpenAI API Key", type="password", placeholder="sk-…")
 
 if not openai_api_key:
-    st.info("API 키를 입력하면 챗봇과 대화할 수 있습니다.", icon="🗝️")
+    st.info("API 키를 입력해야 챗봇을 사용할 수 있습니다.", icon="🗝️")
     st.stop()
 
 # --------------------------------------------------
-# Validate user profile
+# OpenAI 클라이언트 초기화
 # --------------------------------------------------
-if not profession or not interests:
-    st.warning("✏️ 직업과 흥미 분야를 모두 입력해 주세요.")
-    st.stop()
+if _USE_V2:
+    client = OpenAI(api_key=openai_api_key)
+else:  # OpenAI 0.x
+    import openai as _openai  # noqa: N812
+    _openai.api_key = openai_api_key
 
 # --------------------------------------------------
-# OpenAI client initialisation
-# --------------------------------------------------
-client = OpenAI(api_key=openai_api_key)
-
-# --------------------------------------------------
-# Initialise chat history
+# 세션 스테이트 초기화
 # --------------------------------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
 # --------------------------------------------------
-# Dynamic system prompt built from user profile
+# 시스템 프롬프트 (동적)
 # --------------------------------------------------
 system_prompt = (
-    f"You are CareerMate, an AI career companion. "
-    f"The user is a '{profession}' and is interested in '{interests}'. "
-    f"Each response should prioritise news, trends, and local events that are relevant "
-    f"to their profession and interests. "
-    f"The user prefers a daily briefing at {briefing_time.strftime('%H:%M')} (Asia/Seoul). "
-    f"Respond in Korean unless asked otherwise, and keep answers concise but informative."
+    f"You are CareerMate, a Korean AI career companion. "
+    f"The user is a '{profession}' interested in '{interests}'. "
+    f"Focus on news, trends, and local events relevant to these topics. "
+    f"When possible, keep responses concise, informative, and in Korean. "
+    f"The user prefers a daily briefing at {briefing_time.strftime('%H:%M')} Asia/Seoul. "
 )
 
 # --------------------------------------------------
-# Display previous messages
+# 이전 메시지 렌더링
 # --------------------------------------------------
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
 
 # --------------------------------------------------
-# Chat input area
+# 헬퍼: 스트림 반환
+# --------------------------------------------------
+
+def _request_stream(payload):
+    """OpenAI 스트림 요청 (라이브러리 버전별 분기)"""
+    if _USE_V2:
+        return client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=payload,
+            stream=True,
+        )
+    # OpenAI 0.x
+    return _openai.ChatCompletion.create(
+        model="gpt-4o-mini",
+        messages=payload,
+        stream=True,
+    )
+
+
+def _parse_chunk(chunk):
+    """gpt‑4 스트리밍 델타에서 텍스트 추출"""
+    if _USE_V2:
+        delta = chunk.choices[0].delta
+    else:
+        delta = chunk.choices[0].delta
+    return getattr(delta, "content", "") or ""
+
+
+# --------------------------------------------------
+# 챗 입력 처리
 # --------------------------------------------------
 if prompt := st.chat_input("궁금한 점을 입력하세요 …"):
 
-    # Append user prompt to history
+    # 필수 입력 검증
+    if not profession or not interests:
+        st.warning("👀 먼저 직업과 흥미 분야를 입력해 주세요!")
+        st.stop()
+
+    # 세션 히스토리에 사용자 메시지 저장
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # Build payload with system prompt
-    chat_payload = [{"role": "system", "content": system_prompt}] + [
+    # 요청 payload 구성
+    payload = [{"role": "system", "content": system_prompt}] + [
         {"role": m["role"], "content": m["content"]} for m in st.session_state.messages
     ]
 
-    # Generate streaming response
-    stream = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=chat_payload,
-        stream=True,
-    )
+    # OpenAI 스트림 요청
+    _stream = _request_stream(payload)
+
+    # 스트림릿 UI로 실시간 출력
+    def _generator():
+        for _chunk in _stream:
+            _text = _parse_chunk(_chunk)
+            if _text:
+                yield _text
 
     with st.chat_message("assistant"):
-        response = st.write_stream(stream)
+        assistant_reply = st.write_stream(_generator())
 
-    # Save assistant response to history
-    st.session_state.messages.append({"role": "assistant", "content": response})
+    # 히스토리에 AI 응답 저장
+    st.session_state.messages.append({"role": "assistant", "content": assistant_reply})
 
 # --------------------------------------------------
-# Sidebar notification about briefing schedule
+# 사이드바 — 브리핑 설정 안내
 # --------------------------------------------------
-st.sidebar.success(
-    f"⏰ 매일 {briefing_time.strftime('%H:%M')}에 브리핑을 제공하도록 설정되었습니다.\n"
-    "브리핑 기능을 자동화하려면 서버 측 스케줄러(cron, APScheduler 등)와 "
-    "Streamlit Cloud 배치 기능을 연동해 보세요."
-)
+with st.sidebar:
+    st.success(
+        f"⏰ 매일 **{briefing_time.strftime('%H:%M')}** 브리핑이 설정되어 있습니다.\n"
+        "서버 측 스케줄러(예: cron, APScheduler)와 이메일/슬랙 Webhook을 연동해 자동 전달 기능을 구현해 보세요!"
+    )
