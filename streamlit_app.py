@@ -20,7 +20,7 @@ st.markdown("""
         border-top-right-radius: 1rem;
     }
 
-    /* 입력창: 밑줄만 있는 스타일로 */
+    /* 입력 필드 스타일 수정 */
     input[data-testid="stTextInput"],
     textarea[data-testid="stTextArea"] {
         background-color: white !important;
@@ -28,6 +28,7 @@ st.markdown("""
         border-bottom: 2px solid black !important;
         border-radius: 0 !important;
         padding: 0.3rem 0.5rem !important;
+        box-shadow: none !important;
     }
     </style>
 """, unsafe_allow_html=True)
