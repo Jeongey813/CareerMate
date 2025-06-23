@@ -189,3 +189,43 @@ with st.sidebar:
         f"⏰ 매일 **{briefing_time.strftime('%H:%M')}** (Asia/Seoul) 브리핑이 설정되어 있습니다.\n"
         "서버 측 스케줄러(예: cron, APScheduler)와 이메일/Slack Webhook을 연동해 자동 전달 기능을 구현해 보세요!"
     ) 
+
+[기존 코드 생략 - 전체 유지되며 변경 없이 아래 코드만 덧붙임]
+
+# --------------------------------------------------
+# 📌 대답 후 카테고리 버튼 노출 + 선택 시 정보 제공
+# --------------------------------------------------
+if st.session_state.messages and st.session_state.messages[-1]["role"] == "assistant":
+    st.divider()
+    st.subheader("🔍 더 알고 싶은 주제를 선택하세요:")
+    category = st.radio("카테고리 선택", ["최신 뉴스", "업계 트렌드", "지역 이벤트", "도서 추천"], horizontal=True)
+
+    def get_category_content(cat):
+        examples = {
+            "최신 뉴스": f"'{location}' 지역과 '{interests}' 관련 최근 이슈 3가지 알려줘",
+            "업계 트렌드": f"'{profession}' 관련 최신 산업 트렌드 3가지 알려줘",
+            "지역 이벤트": f"{TODAY} 이후 '{location}'에서 열리는 흥미로운 행사 3가지 알려줘",
+            "도서 추천": (
+                f"'{profession}'와 관련된 전문 서적 또는 자기계발 추천 도서 3권을 알려줘.\n"
+                f"각 도서에 대해 제목, 저자, 간단한 설명과 함께 한국 또는 국제 온라인 서점 구매 링크도 포함해줘.\n"
+                f"구매 링크는 실제 존재하지 않아도 되지만 링크 형태 (예: https://...) 로 표현해줘."
+            )
+        }
+        q = examples[cat]
+        payload = [
+            {"role": "system", "content": system_prompt_base.format(
+                profession=profession, location=location, interests=interests)},
+            {"role": "user", "content": q}
+        ]
+        if _USE_V2:
+            res = client.chat.completions.create(model="gpt-4o-mini", messages=payload)
+            return res.choices[0].message.content.strip()
+        res = _openai.ChatCompletion.create(model="gpt-4o-mini", messages=payload)
+        return res.choices[0].message.content.strip()
+
+    if category:
+        with st.spinner(f"'{category}' 관련 정보를 불러오는 중입니다…"):
+            extra = get_category_content(category)
+        st.markdown(f"### 📚 {category} 요약")
+        st.markdown(extra, unsafe_allow_html=True)
+
