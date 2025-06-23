@@ -19,8 +19,10 @@ st.markdown("""
         border-top-left-radius: 1rem;
         border-top-right-radius: 1rem;
     }
-    /* 입력 필드 스타일 수정 */
-    section input, section textarea {
+
+    /* 입력창: 밑줄만 있는 스타일로 */
+    input[data-testid="stTextInput"],
+    textarea[data-testid="stTextArea"] {
         background-color: white !important;
         border: none !important;
         border-bottom: 2px solid black !important;
@@ -29,6 +31,7 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
+
 
 # --------------------------------------------------
 # 페이지 설정 및 날짜 고정
