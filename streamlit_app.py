@@ -2,6 +2,20 @@ import streamlit as st
 import datetime
 
 # --------------------------------------------------
+# 스타일 설정 (CSS)
+# --------------------------------------------------
+st.markdown("""
+    <style>
+    .intro-box {
+        background-color: #e6f2ff;
+        padding: 1.2rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid #cce0f5;
+    }
+    </style>
+""", unsafe_allow_html=True)
+# --------------------------------------------------
 # 라이브러리 호환 처리
 # --------------------------------------------------
 try:
