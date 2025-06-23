@@ -188,4 +188,4 @@ with st.sidebar:
     st.success(
         f"⏰ 매일 **{briefing_time.strftime('%H:%M')}** (Asia/Seoul) 브리핑이 설정되어 있습니다.\n"
         "서버 측 스케줄러(예: cron, APScheduler)와 이메일/Slack Webhook을 연동해 자동 전달 기능을 구현해 보세요!"
-    ) 이코드에 스타일을 추가해서 다시 보여줘봐
+    ) 
