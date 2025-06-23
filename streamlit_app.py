@@ -2,7 +2,7 @@ import streamlit as st
 import datetime
 
 # --------------------------------------------------
-# 스타일 설정 (CSS)
+# 전체 배경 스타일 설정 (CSS)
 # --------------------------------------------------
 st.markdown("""
     <style>
@@ -19,10 +19,16 @@ st.markdown("""
         border-top-left-radius: 1rem;
         border-top-right-radius: 1rem;
     }
+    /* 입력 필드 스타일 수정 */
+    section input, section textarea {
+        background-color: white !important;
+        border: none !important;
+        border-bottom: 2px solid black !important;
+        border-radius: 0 !important;
+        padding: 0.3rem 0.5rem !important;
+    }
     </style>
 """, unsafe_allow_html=True)
-
-
 
 # --------------------------------------------------
 # 페이지 설정 및 날짜 고정
