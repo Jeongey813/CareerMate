@@ -6,14 +6,13 @@ import datetime
 # --------------------------------------------------
 st.markdown("""
     <style>
-    body {
-        background-color: #e6f2ff;
-    }
-    [data-testid="stAppViewContainer"] > .main {
+    html, body, [data-testid="stAppViewContainer"], [data-testid="stAppViewContainer"] > .main, .block-container {
         background-color: #e6f2ff;
     }
     </style>
 """, unsafe_allow_html=True)
+
+
 
 # --------------------------------------------------
 # 페이지 설정 및 날짜 고정
