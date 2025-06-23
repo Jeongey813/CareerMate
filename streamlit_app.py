@@ -197,7 +197,7 @@ with st.sidebar:
 if st.session_state.messages and st.session_state.messages[-1]["role"] == "assistant":
     st.divider()
     st.subheader("🔍 더 알고 싶은 주제를 선택하세요:")
-    category = st.radio("카테고리 선택", ["최신 뉴스", "업계 트렌드", "지역 이벤트", "도서 추천"], horizontal=True)
+    category = st.radio("카테고리 선택", ["최신 뉴스", "업계 트렌드", "지역 이벤트", "도서 추천", "채용 공고"], horizontal=True)
 
     def get_category_content(cat):
         examples = {
