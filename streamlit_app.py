@@ -6,12 +6,15 @@ import datetime
 # --------------------------------------------------
 st.markdown("""
     <style>
-    .intro-box {
+    .intro-section {
         background-color: #e6f2ff;
-        padding: 1.2rem;
-        border-radius: 0.5rem;
-        margin-bottom: 1rem;
-        border: 1px solid #cce0f5;
+        padding: 2rem;
+        border-radius: 0 0 1rem 1rem;
+        margin: -3rem -1rem 2rem -1rem;
+    }
+    .intro-box {
+        font-size: 1.05rem;
+        line-height: 1.6;
     }
     </style>
 """, unsafe_allow_html=True)
