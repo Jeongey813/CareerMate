@@ -209,6 +209,10 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "assis
                 f"각 도서에 대해 제목, 저자, 간단한 설명과 함께 한국 또는 국제 온라인 서점 구매 링크도 포함해줘.\n"
                 f"구매 링크는 실제 존재하지 않아도 되지만 링크 형태 (예: https://...) 로 표현해줘."
             )
+            "채용 공고": (
+                f"'{location}' 또는 온라인에서 '{profession}'와 관련된 최근 채용 공고 3건을 알려줘.\n"
+                f"각 공고에 대해 직무 제목, 회사명, 위치, 마감일, 간단한 설명, 지원 링크를 포함해줘."
+            )
         }
         q = examples[cat]
         payload = [
