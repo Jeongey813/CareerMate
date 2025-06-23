@@ -15,54 +15,37 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
-# --------------------------------------------------
-# 라이브러리 호환 처리
-# --------------------------------------------------
-try:
-    from openai import OpenAI  # type: ignore
-    _USE_V2 = True
-except ImportError:  # pragma: no cover
-    import openai  # type: ignore
-    _USE_V2 = False
 
 # --------------------------------------------------
-# 상수 및 오늘 날짜 고정 (질문한 날)
-# --------------------------------------------------
-TODAY = datetime.date(2025, 6, 23)  # 질문한 날 고정
-
-# --------------------------------------------------
-# Streamlit 페이지 설정
+# 페이지 설정 및 날짜 고정
 # --------------------------------------------------
 st.set_page_config(page_title="CareerMate", page_icon="👩🏻‍💻", layout="centered")
+TODAY = datetime.date(2025, 6, 23)
 
 # --------------------------------------------------
-# 헤더
+# 상단 소개
 # --------------------------------------------------
 st.title("👩🏻‍💻 CareerMate 💬")
 st.markdown(
-    """
-    CareerMate는 GPT‑4o‑mini 모델을 활용해 사용자의 **직업**·**관심사**·**지역** 정보를 기반으로  
-    **2025‑06‑23 기준 최신** 뉴스·트렌드·이벤트를 제공하는 지능형 커리어 챗봇입니다.  
-
+    f"""
+    <div class="intro-box">
+    CareerMate는 GPT‑4o‑mini 모델을 활용해 사용자의 <b>직업</b>·<b>관심사</b>·<b>지역</b> 정보를 기반으로<br>
+    <b>{TODAY.strftime('%Y‑%m‑%d')} 기준 최신</b> 뉴스·트렌드·이벤트를 제공하는 지능형 커리어 챗봇입니다.<br><br>
     💡 입력 완료 시 바로 오늘자 개인화 브리핑을 받아보세요!
-    """
+    </div>
+    """,
+    unsafe_allow_html=True
 )
 
 st.divider()
 
 # --------------------------------------------------
-# 사용자 기본 정보 입력
+# 사용자 입력
 # --------------------------------------------------
-st.subheader("📝 기본 정보 입력")
-
 profession = st.text_input("직업 / 전문 분야", placeholder="예: 데이터 분석가, UX 디자이너 …")
 interests = st.text_input("흥미 있는 분야 (콤마로 구분)", placeholder="예: AI, 데이터 시각화, 스타트업 …")
 location = st.text_input("거주 지역 또는 관심 지역", placeholder="예: 서울, 베를린, 부산 …")
 briefing_time = st.time_input("매일 브리핑 받을 시간", value=datetime.time(9, 0))
-
-# --------------------------------------------------
-# OpenAI API 키 입력
-# --------------------------------------------------
 openai_api_key = st.text_input("🔑 OpenAI API Key", type="password", placeholder="sk-…")
 
 if not openai_api_key:
@@ -70,16 +53,19 @@ if not openai_api_key:
     st.stop()
 
 # --------------------------------------------------
-# OpenAI 클라이언트 초기화
+# OpenAI 초기화
 # --------------------------------------------------
-if _USE_V2:
+try:
+    from openai import OpenAI
     client = OpenAI(api_key=openai_api_key)
-else:
-    import openai as _openai  # noqa: N812
+    _USE_V2 = True
+except ImportError:
+    import openai as _openai
     _openai.api_key = openai_api_key
+    _USE_V2 = False
 
 # --------------------------------------------------
-# 세션 스테이트 초기화
+# 세션 상태
 # --------------------------------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -87,7 +73,7 @@ if "briefing_generated" not in st.session_state:
     st.session_state.briefing_generated = False
 
 # --------------------------------------------------
-# 시스템 프롬프트 (항상 최신 지시)
+# 시스템 프롬프트 구성
 # --------------------------------------------------
 system_prompt_base = (
     f"You are CareerMate, a Korean AI career companion. "
@@ -99,10 +85,10 @@ system_prompt_base = (
 )
 
 # --------------------------------------------------
-# 자동 브리핑 생성 함수
+# 브리핑 생성 함수
 # --------------------------------------------------
 def generate_daily_briefing():
-    briefing_prompt = (
+    prompt = (
         f"Please provide a concise (max 10 bullet points) daily briefing for a '{profession}' "
         f"in '{location}', interested in '{interests}'. Include:\n"
         f"1. 3 key news headlines (since {TODAY - datetime.timedelta(days=10)}).\n"
@@ -110,34 +96,36 @@ def generate_daily_briefing():
         f"3. 2 upcoming local events (on or after {TODAY.isoformat()}).\n"
         f"All content must be accurate as of {TODAY}. Respond in Korean with markdown bullets."
     )
-
     payload = [
         {"role": "system", "content": system_prompt_base.format(
             profession=profession, location=location, interests=interests)},
-        {"role": "user", "content": briefing_prompt},
+        {"role": "user", "content": prompt}
     ]
-
     if _USE_V2:
-        result = client.chat.completions.create(model="gpt-4o-mini", messages=payload)
-        return result.choices[0].message.content.strip()
-    result = _openai.ChatCompletion.create(model="gpt-4o-mini", messages=payload)
-    return result.choices[0].message.content.strip()
+        response = client.chat.completions.create(model="gpt-4o-mini", messages=payload)
+        return response.choices[0].message.content.strip()
+    else:
+        response = _openai.ChatCompletion.create(model="gpt-4o-mini", messages=payload)
+        return response.choices[0].message.content.strip()
 
 # --------------------------------------------------
-# 입력 완료 시 자동 브리핑
+# 자동 브리핑 실행
 # --------------------------------------------------
 if all([profession, interests, location]) and not st.session_state.briefing_generated:
     with st.spinner("오늘자 브리핑을 생성 중입니다…"):
-        daily_brief = generate_daily_briefing()
-    st.session_state.messages.append({"role": "assistant", "content": daily_brief})
+        briefing = generate_daily_briefing()
+    st.session_state.messages.append({"role": "assistant", "content": briefing})
     st.session_state.briefing_generated = True
 
+# --------------------------------------------------
+# 이전 대화 출력
+# --------------------------------------------------
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
 # --------------------------------------------------
-# OpenAI 스트림 처리
+# 실시간 응답 핸들링
 # --------------------------------------------------
 def _request_stream(payload):
     if _USE_V2:
@@ -148,11 +136,7 @@ def _parse_chunk(chunk):
     delta = chunk.choices[0].delta
     return getattr(delta, "content", "") or ""
 
-# --------------------------------------------------
-# 대화 입력 처리
-# --------------------------------------------------
 if prompt := st.chat_input("궁금한 점을 입력하세요 …"):
-
     if not all([profession, interests, location]):
         st.warning("👀 먼저 직업·흥미·지역 정보를 모두 입력해 주세요!")
         st.stop()
@@ -161,11 +145,8 @@ if prompt := st.chat_input("궁금한 점을 입력하세요 …"):
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    system_prompt = system_prompt_base.format(
-        profession=profession, location=location, interests=interests
-    )
-
-    payload = [{"role": "system", "content": system_prompt}] + [
+    payload = [{"role": "system", "content": system_prompt_base.format(
+        profession=profession, location=location, interests=interests)}] + [
         {"role": m["role"], "content": m["content"]} for m in st.session_state.messages
     ]
 
@@ -178,12 +159,12 @@ if prompt := st.chat_input("궁금한 점을 입력하세요 …"):
                 yield txt
 
     with st.chat_message("assistant"):
-        assistant_reply = st.write_stream(_gen())
+        reply = st.write_stream(_gen())
 
-    st.session_state.messages.append({"role": "assistant", "content": assistant_reply})
+    st.session_state.messages.append({"role": "assistant", "content": reply})
 
 # --------------------------------------------------
-# 사이드바 안내
+# 사이드바 알림
 # --------------------------------------------------
 with st.sidebar:
     st.success(
