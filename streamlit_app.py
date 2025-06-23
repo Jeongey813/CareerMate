@@ -6,8 +6,18 @@ import datetime
 # --------------------------------------------------
 st.markdown("""
     <style>
-    html, body, [data-testid="stAppViewContainer"], [data-testid="stAppViewContainer"] > .main, .block-container {
+    html, body {
         background-color: #e6f2ff;
+    }
+    [data-testid="stAppViewContainer"] > .main {
+        background-color: #e6f2ff;
+    }
+    .white-section {
+        background-color: white;
+        padding: 2rem;
+        margin-top: -1.5rem;
+        border-top-left-radius: 1rem;
+        border-top-right-radius: 1rem;
     }
     </style>
 """, unsafe_allow_html=True)
