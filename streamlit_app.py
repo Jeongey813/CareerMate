@@ -1,5 +1,7 @@
 import streamlit as st
 import datetime
+import time
+
 
 # --------------------------------------------------
 # 전체 배경 스타일 설정 (CSS)
@@ -119,6 +121,9 @@ def generate_daily_briefing():
             profession=profession, location=location, interests=interests)},
         {"role": "user", "content": prompt}
     ]
+    
+    time.sleep(1)
+
     if _USE_V2:
         response = client.chat.completions.create(model="gpt-4o-mini", messages=payload)
         return response.choices[0].message.content.strip()
@@ -146,6 +151,7 @@ for msg in st.session_state.messages:
 # 실시간 응답 핸들링
 # --------------------------------------------------
 def _request_stream(payload):
+    time.sleep(1)
     if _USE_V2:
         return client.chat.completions.create(model="gpt-4o-mini", messages=payload, stream=True)
     return _openai.ChatCompletion.create(model="gpt-4o-mini", messages=payload, stream=True)
@@ -226,6 +232,9 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "assis
                 profession=profession, location=location, interests=interests)},
             {"role": "user", "content": q}
         ]
+        
+        time.sleep(1)
+        
         if _USE_V2:
             res = client.chat.completions.create(model="gpt-4o-mini", messages=payload)
             return res.choices[0].message.content.strip()
