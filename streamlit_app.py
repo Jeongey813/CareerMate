@@ -125,10 +125,10 @@ def generate_daily_briefing():
     time.sleep(1)
 
     if _USE_V2:
-        response = client.chat.completions.create(model="gpt-4o-mini", messages=payload)
+        response = client.chat.completions.create(model="gpt-3.5-turbo", messages=payload)
         return response.choices[0].message.content.strip()
     else:
-        response = _openai.ChatCompletion.create(model="gpt-4o-mini", messages=payload)
+        response = _openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=payload)
         return response.choices[0].message.content.strip()
 
 # --------------------------------------------------
@@ -153,8 +153,8 @@ for msg in st.session_state.messages:
 def _request_stream(payload):
     time.sleep(1)
     if _USE_V2:
-        return client.chat.completions.create(model="gpt-4o-mini", messages=payload, stream=True)
-    return _openai.ChatCompletion.create(model="gpt-4o-mini", messages=payload, stream=True)
+        return client.chat.completions.create(model="gpt-3.5-turbo", messages=payload, stream=True)
+    return _openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=payload, stream=True)
 
 def _parse_chunk(chunk):
     delta = chunk.choices[0].delta
@@ -236,9 +236,9 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "assis
         time.sleep(1)
         
         if _USE_V2:
-            res = client.chat.completions.create(model="gpt-4o-mini", messages=payload)
+            res = client.chat.completions.create(model="gpt-3.5-turbo", messages=payload)
             return res.choices[0].message.content.strip()
-        res = _openai.ChatCompletion.create(model="gpt-4o-mini", messages=payload)
+        res = _openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=payload)
         return res.choices[0].message.content.strip()
 
     if category:
