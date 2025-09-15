@@ -40,7 +40,7 @@ st.markdown("""
 # 페이지 설정 및 날짜 고정
 # --------------------------------------------------
 st.set_page_config(page_title="CareerMate", page_icon="👩🏻‍💻", layout="centered")
-TODAY = datetime.date(2025, 6, 23)
+TODAY = datetime.date.today()
 
 # --------------------------------------------------
 # 상단 소개
