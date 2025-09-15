@@ -101,9 +101,14 @@ system_prompt_base = (
     f"preferably from the last 10 days or upcoming after {TODAY.isoformat()}. "
     f"If the user asks for '이벤트' or '행사', only mention those that are scheduled for {TODAY.isoformat()} or later in '{{location}}'. "
     f"The user is a '{{profession}}' located in '{{location}}' and interested in '{{interests}}'. "
-    f"Keep responses concise, informative, markdown-formatted, and in Korean."
+    f"Keep responses concise, informative, markdown-formatted, and in Korean.\n\n"
+    f"{LINK_POLICY}"
 )
-
+LINK_POLICY = (
+    "⚠️ 절대로 존재하지 않는 URL을 만들어내지 마세요. "
+    "실제 공식 출처(언론사, 회사, 이벤트/채용 페이지 등)에서 확인 가능한 URL만 제공하세요. "
+    "URL이 확실하지 않다면 링크는 아예 생략하고, 대신 출처명과 검색 키워드를 제공하세요."
+)
 # --------------------------------------------------
 # 브리핑 생성 함수
 # --------------------------------------------------
@@ -215,16 +220,22 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "assis
         examples = {
             "최신 뉴스": f"'{location}' 지역과 '{interests}' 관련 최근 이슈 3가지 알려줘",
             "업계 트렌드": f"'{profession}' 관련 최신 산업 트렌드 3가지 알려줘",
-            "지역 이벤트": f"{TODAY} 이후 '{location}'에서 열리는 흥미로운 행사 3가지 알려줘",
+            "지역 이벤트":(
+                        f"{TODAY} 이후 '{location}'에서 열리는 흥미로운 행사 3가지 알려줘"
+                        f"제목, 주최, 날짜/장소 포함. 공식 이벤트 페이지가 확실할 때만 URL 1개 포함하고, "
+                        f"확실하지 않으면 링크는 생략해."
+    ),
             "도서 추천": (
-                f"'{profession}'와 관련된 전문 서적 또는 자기계발 추천 도서 3권을 알려줘.\n"
-                f"각 도서에 대해 제목, 저자, 간단한 설명과 함께 한국 또는 국제 온라인 서점 구매 링크도 포함해줘.\n"
-                f"구매 링크는 실제 존재하지 않아도 되지만 링크 형태 (예: https://...) 로 표현해줘."
-            ),
-            "채용 공고": (
-                f"'{location}' 또는 온라인에서 '{profession}'와 관련된 최근 채용 공고 3건을 알려줘.\n"
-                f"각 공고에 대해 직무 제목, 회사명, 위치, 마감일, 간단한 설명, 지원 링크를 포함해줘."
-            )
+                        f"'{profession}'와 관련된 전문 서적 또는 자기계발 추천 도서 3권을 알려줘.\n"
+                        f"각 도서에 대해 제목, 저자, 간단한 설명을 포함하고, 공식 서점/출판사 페이지가 확실할 때만 URL 1개를 추가해줘.\n"
+                        f"URL이 불확실하면 링크는 넣지 마."
+   ),
+           "채용 공고": (
+                        f"'{location}' 또는 온라인에서 '{profession}'와 관련된 최근 채용 공고 3건을 알려줘.\n"
+                        f"직무 제목, 회사명, 위치, 마감일, 요약 포함. "
+                        f"Greenhouse/Lever/Workable/회사 공식 채용 페이지 등 실제 URL만 1개 포함하고, "
+                        f"URL을 확신할 수 없으면 링크는 생략해."
+    )
         }
         q = examples[cat]
         payload = [
